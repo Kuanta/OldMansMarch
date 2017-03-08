@@ -22,7 +22,7 @@ public abstract class Entity {
 	protected int id;
 	protected EntityManager.EntityType type;
 	protected Commander commander;
-	
+
 
 	public Entity(int id,Commander commander,World world,Vector2 initPos){
 		this.id=id;

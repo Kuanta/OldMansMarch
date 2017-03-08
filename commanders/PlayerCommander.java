@@ -10,7 +10,7 @@ public class PlayerCommander extends Commander{
 	
 	public PlayerCommander(World world,float posX,EntityManager em){
 		super(world,posX,em);
-		currentType=EntityManager.UnitType.TEST; //Set as default
+		currentType=EntityManager.UnitType.INFANTRY; //Set as default
 		this.health=Configuration.playerHealth;
 		this.faction=EntityManager.Faction.PLAYER;
 		createWall(world,this.em);

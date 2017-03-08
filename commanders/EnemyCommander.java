@@ -6,9 +6,11 @@ import com.oldmansmarch.Configuration;
 import com.oldmansmarch.entities.EntityManager;
 import com.oldmansmarch.states.PlayState;
 
+import java.util.ArrayList;
+
 public class EnemyCommander extends Commander{
-	private EntityManager.EntityType[] entityValues;
-	private int entityValuesLength;
+	private ArrayList<EntityManager.UnitType> availableUnits;
+
 	private int index=0;
 	private Vector2[]  spawnPoints;
 	private int spawnPointsLength;
@@ -16,12 +18,17 @@ public class EnemyCommander extends Commander{
 	public EnemyCommander(World world,float posX,EntityManager em,float offset){
 		super(world,posX,em);
 		currentType=EntityManager.UnitType.ZOMBIE; //Set as default
+		availableUnits=new ArrayList<EntityManager.UnitType>();
+		for(int i=0;i<2;i++){
+			availableUnits.add(EntityManager.UnitType.ZOMBIE);
+		}
+		availableUnits.add(EntityManager.UnitType.HEAVY_UNDEAD);
+		availableUnits.add(EntityManager.UnitType.UNDEAD_MAGE);
 		this.health=Configuration.enemyHealth;
 		this.faction=EntityManager.Faction.ENEMY;
 		createWall(world,this.em);
 		this.gold=100;
-		entityValues=EntityManager.EntityType.values();
-		entityValuesLength=entityValues.length;
+
 		this.spawnCooldown=1f;
 		this.spawnPointOffset=offset;
 		this.direction=-1;
@@ -31,8 +38,8 @@ public class EnemyCommander extends Commander{
 		//Let the man think
 		super.update(delta);
 		this.gold=100; //Unlimited resources
-		index=(int)(Math.random()*entityValuesLength);
-		//this.currentType=entityValues[index];
+		index=(int)(Math.random()*availableUnits.size());
+		this.currentType= availableUnits.get(index);
 		spawn(masterState.getEntityManager(),masterState.getWorld(),spawnPoints[(int) (Math.random()*spawnPointsLength)]);
 	}
 	public void resize(){

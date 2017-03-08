@@ -28,11 +28,15 @@ public class Unit extends Entity{
 	}
 	public Unit(int id, Commander commander, World world, Texture sheet, Vector2 initPos,boolean createSprite,boolean createBody) {
 		super(id, commander,world, initPos);
+		//Defaults
+		damage=1;
+		health=1;
 		this.type=EntityManager.EntityType.UNIT;
 		this.sheet=sheet;
+		//If the Unity going to have different body size than the base one, then don't create the body in the Unit's cons.
 		if(createSprite){
 			this.createSprite(initPos.x, initPos.y);
-			this.sprite.setRegion(new TextureRegion(this.sheet,0,0,32,64));
+			this.sprite.setRegion(new TextureRegion(this.sheet,0,0,48,48));
 		}
 		if(createBody){
 			this.createDynamicBody(world, sprite.getWidth(), sprite.getHeight(), initPos.x, initPos.y);

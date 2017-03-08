@@ -11,24 +11,21 @@ package com.oldmansmarch.entities;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
+import com.oldmansmarch.AssetsManager;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.commanders.Commander;
 import com.oldmansmarch.entities.projectiles.Fireball;
-import com.oldmansmarch.entities.units.TestEntity;
+import com.oldmansmarch.entities.units.HeavyUndead;
+import com.oldmansmarch.entities.units.Infantry;
+import com.oldmansmarch.entities.units.Mounted;
+import com.oldmansmarch.entities.units.UndeadMage;
 import com.oldmansmarch.entities.units.Wizard;
 import com.oldmansmarch.entities.units.Zombie;
 
@@ -48,19 +45,23 @@ public class EntityManager {
 		INFANTRY,
 		ZOMBIE,
 		WIZARD,
-		TEST,
-		FIREBALL
+		MOUNTED,
+		HEAVY_UNDEAD,
+		UNDEAD_MAGE
 	}
 	public static enum ProjectileType{
 		FIREBALL
 	}
+	//How much an entity will cost?
 	public static HashMap<UnitType,Float> entityCosts;
 	static{
 		entityCosts=new HashMap<UnitType,Float>();
 		entityCosts.put(UnitType.INFANTRY, 1f);
 		entityCosts.put(UnitType.ZOMBIE, 1f);
 		entityCosts.put(UnitType.WIZARD,4f);
-		entityCosts.put(UnitType.TEST, 1f);
+		entityCosts.put(UnitType.MOUNTED, 3f);
+		entityCosts.put(UnitType.HEAVY_UNDEAD, Configuration.heavyUndeadCost);
+		entityCosts.put(UnitType.UNDEAD_MAGE,Configuration.undeadMageCost);
 	}
 	
 	public static enum Faction{
@@ -69,39 +70,45 @@ public class EntityManager {
 	}
 	//Containers
 	private ConcurrentHashMap<Integer, Entity> entities; //This will hold the entities present on PlayerState
-	//private Array<Integer> entitesOnMap;
-	public HashMap<UnitType,Texture> textures;
-	public HashMap<ProjectileType,Texture> projectileTextures;
+
+	//Textures
+	public HashMap<UnitType,AssetsManager.Sheets> unitTextures;
+	public HashMap<ProjectileType,AssetsManager.Sheets> projectileTextures;
 	
 	//Id variables
 	private Array<Integer> lastFreedId;
 	private int nextId;
 	private int entCount;
 	public Array<Integer> toDelete;
-	
+
+	//AssetsManager
+	private AssetsManager assetesManager;
+
 	//Getters and Setters
 	public int getEntCount(){
 		return this.entCount;
 	}
 	
 	public EntityManager(){
+		this.assetesManager=new AssetsManager();
 		this.entities=new ConcurrentHashMap<Integer,Entity>();
 		this.toDelete=new Array<Integer>();
-		//this.entitesOnMap=new Array<Integer>();
 		this.lastFreedId=new Array<Integer>();
 		entCount=0;
 		nextId=0;
 		
 		//Create Unit Textures
-		textures=new HashMap<UnitType,Texture>();
-		textures.put(UnitType.INFANTRY, new Texture(Gdx.files.internal("claudius.png")));
-		textures.put(UnitType.TEST, new Texture(Gdx.files.internal("claudius.png")));
-		textures.put(UnitType.ZOMBIE, new Texture(Gdx.files.internal("zombies.png")));
-		textures.put(UnitType.WIZARD,new Texture(Gdx.files.internal("laila.png")));
+		unitTextures=new HashMap<UnitType,AssetsManager.Sheets>();
+		unitTextures.put(UnitType.INFANTRY,AssetsManager.Sheets.HUMANS);
+		unitTextures.put(UnitType.MOUNTED,AssetsManager.Sheets.HUMANS);
+		unitTextures.put(UnitType.WIZARD,AssetsManager.Sheets.HUMANS);
+		unitTextures.put(UnitType.ZOMBIE,AssetsManager.Sheets.UNDEADS);
+		unitTextures.put(UnitType.HEAVY_UNDEAD,AssetsManager.Sheets.UNDEADS);
+		unitTextures.put(UnitType.UNDEAD_MAGE,AssetsManager.Sheets.UNDEADS);
 		
 		//Create Projectile Texture
-		projectileTextures=new HashMap<ProjectileType,Texture>();
-		projectileTextures.put(ProjectileType.FIREBALL,new Texture(Gdx.files.internal("fireball.png")));
+		projectileTextures=new HashMap<ProjectileType,AssetsManager.Sheets>();
+		projectileTextures.put(ProjectileType.FIREBALL,AssetsManager.Sheets.SPELLS);
 	}
 	public void draw(SpriteBatch batch){
 		for(Entry<Integer, Entity> ent:this.entities.entrySet()){
@@ -111,18 +118,33 @@ public class EntityManager {
 			
 		}
 	}
+	public Texture getUnitTexture(UnitType type){
+		return this.assetesManager.textures.get(this.unitTextures.get(type));
+	}
+	public Texture getProjectileTexture(ProjectileType type){
+		return this.assetesManager.textures.get(this.projectileTextures.get(type));
+	}
 	public void createUnit(UnitType type,Commander commander,World world,Vector2 spawnPoint){
 		int id;
 		id=requestId();
 		switch(type){
-		case TEST:
-			this.entities.put(id, new TestEntity(id,commander,world,textures.get(type),spawnPoint,true,true));
+		case INFANTRY:
+			this.entities.put(id, new Infantry(id,commander,world,getUnitTexture(type),spawnPoint));
 			break;
 		case ZOMBIE:
-			this.entities.put(id, new Zombie(id,commander,world,textures.get(type),spawnPoint,true,true));
+			this.entities.put(id, new Zombie(id,commander,world,getUnitTexture(type),spawnPoint,true,true));
 			break;
 		case WIZARD:
-			this.entities.put(id,new Wizard(id,commander,this,world,textures.get(type),spawnPoint,true,true));
+			this.entities.put(id,new Wizard(id,commander,this,world,getUnitTexture(type),spawnPoint,true,true));
+			break;
+		case MOUNTED:
+			this.entities.put(id,new Mounted(id,commander,world,getUnitTexture(type),spawnPoint));
+			break;
+		case HEAVY_UNDEAD:
+			this.entities.put(id,new HeavyUndead(id,commander,world,getUnitTexture(type),spawnPoint));
+			break;
+		case UNDEAD_MAGE:
+			this.entities.put(id,new UndeadMage(id,commander,this,world,getUnitTexture(type),spawnPoint));
 			break;
 		default:
 			
@@ -136,7 +158,7 @@ public class EntityManager {
 		id=requestId();
 		switch(type){
 		case FIREBALL:
-			this.entities.put(id, new Fireball(id, commander,world, projectileTextures.get(type), spawnPoint, initialSpeed));
+			this.entities.put(id, new Fireball(id, commander,world, getProjectileTexture(type), spawnPoint, initialSpeed));
 			break;
 		default:
 			break;
@@ -147,10 +169,11 @@ public class EntityManager {
 		id=requestId();
 		this.entities.put(id, new Wall(id, commander, world,pos));
 	}
+	//Unit vs Unit
 	public void combat(Unit entA,Unit entB){
 		entA.health-=entB.damage;
 		entB.health-=entA.damage;
-		
+		System.out.println(entB.damage+" "+entA.damage);
 		System.out.println("Combat");
 		
 		//Kill the entities if they are 0 hp
@@ -169,6 +192,7 @@ public class EntityManager {
 			this.toDelete.add(entB.id);
 		}
 	}
+	//Projectile vs Unit
 	public void impact(Projectile pro,Unit unit){
 		pro.doStuff(unit);
 		if(unit.getHealth()<=0){
@@ -182,10 +206,6 @@ public class EntityManager {
 			this.toDelete.add(unit.getId());
 		}
 		this.toDelete.add(pro.getId());
-	}
-	public void addEntity(int id,Entity newEntity){
-		this.entities.put(id,newEntity);
-		entCount++;
 	}
 	public int requestId(){
 		//If outside objects wants to create an Entity...
@@ -216,8 +236,6 @@ public class EntityManager {
 		
 	}
 	public void dispose(){
-		for(UnitType type:textures.keySet()){
-			textures.get(type).dispose();
-		}
+		this.assetesManager.dispose();
 	}
 }

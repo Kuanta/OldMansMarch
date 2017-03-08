@@ -1,7 +1,5 @@
 package com.oldmansmarch.states;
 
-import java.util.ArrayList;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
@@ -10,34 +8,23 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.EdgeShape;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.GameManager;
-import com.oldmansmarch.commanders.Commander;
 import com.oldmansmarch.commanders.EnemyCommander;
 import com.oldmansmarch.commanders.PlayerCommander;
 import com.oldmansmarch.entities.Entity;
 import com.oldmansmarch.entities.EntityManager;
 import com.oldmansmarch.entities.Projectile;
 import com.oldmansmarch.entities.Unit;
-import com.oldmansmarch.entities.units.TestEntity;
 import com.oldmansmarch.ui.PlayUi;
-import com.oldmansmarch.ui.Ui;
 
 public class PlayState extends State implements InputProcessor{
 	//Sub states
@@ -133,49 +120,8 @@ public class PlayState extends State implements InputProcessor{
 		//TestCode
 		world=new World(new Vector2(0,0),true);
 		world.setContactListener(new ContactListener(){
-
-			/*@Override
 			public void beginContact(Contact contact) {
-				// TODO Auto-generated method stub
-				Fixture fixA=contact.getFixtureA();
-				Fixture fixB=contact.getFixtureB();
-				
-				byte fixABytes=(byte) fixA.getFilterData().categoryBits;
-				byte fixBBytes=(byte)fixB.getFilterData().categoryBits;
-				
-				//Check if they are belong in the same faction
-				if((fixABytes>>>EntityManager.FACTION_BIT  ^ fixBBytes>>>EntityManager.FACTION_BIT)==1){
-					//They aren't in the same faction
-					
-					//Check if they are both walls
-					if(((fixABytes>>>EntityManager.TYPE_BIT & 1) ==0 )  && ((fixBBytes>>>EntityManager.TYPE_BIT & 1)==0)){
-						//They are both walls
-					}else {
-						//Check if they are both units
-						if(((fixABytes>>>EntityManager.TYPE_BIT & 1) ==1 )  && ((fixBBytes>>>EntityManager.TYPE_BIT & 1)==1)){
-							//They are both units
-							em.combat((Entity)fixA.getBody().getUserData(), (Entity)fixB.getBody().getUserData());
-						}else{
-							//Only one of them is wall and the other is a unit
-							if((fixABytes>>>EntityManager.TYPE_BIT & 1)==1){
-							//FixB is wall, damage it
-								((Commander) fixB.getBody().getUserData()).damageCommander(((Entity) fixA.getBody().getUserData()).getDamage());
-								//Fixture A is unit, delete A
-								em.toDelete.add(((Entity) fixA.getBody().getUserData()).getId());
-							}else{
-								//FixA is wall, damage it
-								((Commander) fixA.getBody().getUserData()).damageCommander(((Entity) fixB.getBody().getUserData()).getDamage());
-								//Fixture B is unit, delete b
-								em.toDelete.add(((Entity) fixB.getBody().getUserData()).getId());
-							}
-						}
-						
-					}
-				}else{
-					//Same faction collision
-				}
-			}*/
-			public void beginContact(Contact contact) {
+				//All the needed information is in the userData
 				Entity entA=(Entity) contact.getFixtureA().getBody().getUserData();
 				Entity entB=(Entity) contact.getFixtureB().getBody().getUserData();
 				
@@ -191,7 +137,8 @@ public class PlayState extends State implements InputProcessor{
 									break;
 								case WALL:
 									//ENTB:WALL
-									//Delete EntA
+									//Delete EntA and Damage the wall(B)
+									entB.getCommander().damageCommander(((Unit)entA).getDamage());
 									em.toDelete.add(entA.getId());
 									break;
 								case PROJECTILE:
@@ -205,7 +152,8 @@ public class PlayState extends State implements InputProcessor{
 							switch(entB.getType()){
 							case UNIT:
 								//ENTB:UNIT
-								//Delete EntB
+								//Delete EntB damage the wall(A)
+								entA.getCommander().damageCommander(((Unit)entB).getDamage());
 								em.toDelete.add(entB.getId());
 								break;
 							case WALL:

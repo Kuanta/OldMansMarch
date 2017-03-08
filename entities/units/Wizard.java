@@ -1,10 +1,12 @@
 package com.oldmansmarch.entities.units;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.physics.box2d.World;
+import com.oldmansmarch.AssetsManager;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.commanders.Commander;
 import com.oldmansmarch.entities.Entity;
@@ -26,6 +28,7 @@ public class Wizard extends Unit {
         this.world=world;
         this.em=em;
         this.unitType=EntityManager.UnitType.WIZARD;
+        this.sprite.setRegion(new TextureRegion(this.sheet, (int)AssetsManager.wizardRect.x,(int)AssetsManager.wizardRect.y,48,48));
         callback=new RayCastCallback() {
             @Override
             public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
@@ -53,7 +56,7 @@ public class Wizard extends Unit {
         if(!onCooldown){
         	Vector2 bodyPos=this.body.getPosition();
             Vector2 from=new Vector2(bodyPos.x+this.sprite.getWidth()+0.1f,bodyPos.y+this.sprite.getHeight()/2f);
-           em.createUnit(EntityManager.UnitType.FIREBALL,this.commander,this.world,from);
+           //em.createUnit(EntityManager.PType.FIREBALL,this.commander,this.world,from);
            em.createProjectile(EntityManager.ProjectileType.FIREBALL, this.commander, this.world, from, this.body.getLinearVelocity());
             onCooldown=true;
         }

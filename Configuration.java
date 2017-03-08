@@ -13,5 +13,8 @@ public class Configuration {
 	public static float enemyHealth=50;
 	public static float baseEntitySpeed=10;
 	public static float goldPerSec=1.5f;
-	
+
+	//Unit Costs
+	public static float heavyUndeadCost=2f;
+	public static float undeadMageCost=2f;
 }
