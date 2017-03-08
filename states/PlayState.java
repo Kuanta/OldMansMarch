@@ -315,7 +315,7 @@ public class PlayState extends State implements InputProcessor{
 		this.background.draw(batch);
 		em.draw(batch);
 		this.batch.end();
-		debug.render(world, camera.combined);
+		//debug.render(world, camera.combined);
 		this.ui.update();
 		this.ui.render(Gdx.graphics.getDeltaTime());
 		

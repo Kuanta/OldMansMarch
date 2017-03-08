@@ -15,7 +15,7 @@ public class PlayerCommander extends Commander{
 		this.faction=EntityManager.Faction.PLAYER;
 		createWall(world,this.em);
 		this.gold=10;
-		this.health=100;
+		this.health=2;
 		this.direction=1;
 		
 	}

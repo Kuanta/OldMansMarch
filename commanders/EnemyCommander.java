@@ -22,7 +22,7 @@ public class EnemyCommander extends Commander{
 		this.gold=100;
 		entityValues=EntityManager.EntityType.values();
 		entityValuesLength=entityValues.length;
-		this.spawnCooldown=5f;
+		this.spawnCooldown=1f;
 		this.spawnPointOffset=offset;
 		this.direction=-1;
 		createSpawnPoints();

@@ -59,7 +59,7 @@ public class EntityManager {
 		entityCosts=new HashMap<UnitType,Float>();
 		entityCosts.put(UnitType.INFANTRY, 1f);
 		entityCosts.put(UnitType.ZOMBIE, 1f);
-		entityCosts.put(UnitType.WIZARD,2f);
+		entityCosts.put(UnitType.WIZARD,4f);
 		entityCosts.put(UnitType.TEST, 1f);
 	}
 	
