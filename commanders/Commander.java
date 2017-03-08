@@ -19,13 +19,14 @@ public abstract class Commander {
 	protected float spawnTimer;
 	protected boolean onCooldown;
 	protected float health=1f;
-	protected EntityManager.EntityType currentType;
+	protected EntityManager.UnitType currentType;
 	protected float posX; //This is the position in horizontal axis from which the units going to spawn
 	protected EntityManager.Faction faction;
 	protected float gold;
 	protected float score;
 	protected float baseSpeed;
 	protected int direction;
+	protected EntityManager em;
 	
 	//Getters
 	public float getHealth(){
@@ -34,7 +35,7 @@ public abstract class Commander {
 	public void damageCommander(int damage){
 		this.health-=damage;
 	}
-	public void setCurrentType(EntityManager.EntityType type){
+	public void setCurrentType(EntityManager.UnitType type){
 		this.currentType=type;
 	}
 	public EntityManager.Faction getFaction(){
@@ -68,7 +69,8 @@ public abstract class Commander {
 	}
 	public void setSpawnCooldown(float newCooldown){this.spawnCooldown=newCooldown;}
 	public void updateSpawnCooldown(float cd){this.spawnCooldown+=cd;}
-	public Commander(World world,float posX){
+	public Commander(World world,float posX,EntityManager em){
+		this.em=em;
 		this.posX=posX;
 		onCooldown=false;
 		spawnTimer=0f;
@@ -84,7 +86,7 @@ public abstract class Commander {
 				if(clicked.y>Configuration.gameWorldHeight-Configuration.baseEntityHeight){
 					spawnPoint.y=Configuration.gameWorldHeight-Configuration.baseEntityHeight;
 				}
-				em.createEntity(this.currentType,this,world,spawnPoint);
+				em.createUnit(this.currentType,this,world,spawnPoint);
 				onCooldown=true;
 				this.gold-=EntityManager.entityCosts.get(this.currentType);
 			}else{
@@ -94,26 +96,8 @@ public abstract class Commander {
 			//Cant spawn
 		}
 	}
-	public void createWall(World world,short categoryBits){
-		//Create the wall
-		BodyDef bd=new BodyDef();
-		bd.type=BodyType.StaticBody;
-		bd.position.set(posX,0);
-		Body body=world.createBody(bd);
-		body.setUserData(this);
-		PolygonShape edge=new PolygonShape();
-		edge.set(new Vector2[] {
-				new Vector2(0,0),
-				new Vector2(0.1f,0f),
-				new Vector2(0,Configuration.gameWorldHeight),
-				new Vector2(0.1f,Configuration.gameWorldHeight)
-		});
-		FixtureDef fixDef=new FixtureDef();
-		fixDef.shape=edge;
-		fixDef.isSensor=true;
-		fixDef.filter.categoryBits=categoryBits;
-		body.createFixture(fixDef);
-		edge.dispose();
+	public void createWall(World world,EntityManager em){
+		em.createWall(world, this, new Vector2(this.posX,0));
 	}
 	public void update(float delta){
 		//Check if the commander is out of cooldown

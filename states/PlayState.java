@@ -33,7 +33,9 @@ import com.oldmansmarch.commanders.EnemyCommander;
 import com.oldmansmarch.commanders.PlayerCommander;
 import com.oldmansmarch.entities.Entity;
 import com.oldmansmarch.entities.EntityManager;
-import com.oldmansmarch.entities.TestEntity;
+import com.oldmansmarch.entities.Projectile;
+import com.oldmansmarch.entities.Unit;
+import com.oldmansmarch.entities.units.TestEntity;
 import com.oldmansmarch.ui.PlayUi;
 import com.oldmansmarch.ui.Ui;
 
@@ -174,44 +176,68 @@ public class PlayState extends State implements InputProcessor{
 				}
 			}*/
 			public void beginContact(Contact contact) {
-				// TODO Auto-generated method stub
-				Fixture fixA=contact.getFixtureA();
-				Fixture fixB=contact.getFixtureB();
+				Entity entA=(Entity) contact.getFixtureA().getBody().getUserData();
+				Entity entB=(Entity) contact.getFixtureB().getBody().getUserData();
 				
-				byte fixABytes=(byte) fixA.getFilterData().categoryBits;
-				byte fixBBytes=(byte)fixB.getFilterData().categoryBits;
-				
-				//Check if they are belong in the same faction
-				if((fixABytes>>>EntityManager.FACTION_BIT  ^ fixBBytes>>>EntityManager.FACTION_BIT)==1){
-					//They aren't in the same faction
-					
-					//Check if they are both walls
-					if(((fixABytes>>>EntityManager.TYPE_BIT & 1) ==0 )  && ((fixBBytes>>>EntityManager.TYPE_BIT & 1)==0)){
-						//They are both walls
-					}else {
-						//Check if they are both units
-						if(((fixABytes>>>EntityManager.TYPE_BIT & 1) ==1 )  && ((fixBBytes>>>EntityManager.TYPE_BIT & 1)==1)){
-							//They are both units
-							em.combat((Entity)fixA.getBody().getUserData(), (Entity)fixB.getBody().getUserData());
-						}else{
-							//Only one of them is wall and the other is a unit
-							if((fixABytes>>>EntityManager.TYPE_BIT & 1)==1){
-							//FixB is wall, damage it
-								((Commander) fixB.getBody().getUserData()).damageCommander(((Entity) fixA.getBody().getUserData()).getDamage());
-								//Fixture A is unit, delete A
-								em.toDelete.add(((Entity) fixA.getBody().getUserData()).getId());
-							}else{
-								//FixA is wall, damage it
-								((Commander) fixA.getBody().getUserData()).damageCommander(((Entity) fixB.getBody().getUserData()).getDamage());
-								//Fixture B is unit, delete b
-								em.toDelete.add(((Entity) fixB.getBody().getUserData()).getId());
+				//Check if they belong in the same faction
+				if(entA.getCommander().getFaction()!=entB.getCommander().getFaction()){
+					//Check the types
+					switch(entA.getType()){
+						case UNIT:
+							switch(entB.getType()){
+								case UNIT:
+									//ENTB:UNIT
+									em.combat((Unit)entA,(Unit) entB);
+									break;
+								case WALL:
+									//ENTB:WALL
+									//Delete EntA
+									em.toDelete.add(entA.getId());
+									break;
+								case PROJECTILE:
+									//ENTB:PROJECTILE
+									//doStuff to entB
+									em.impact((Projectile)entB, (Unit)entA);
+									break;
 							}
+							break;
+						case WALL:
+							switch(entB.getType()){
+							case UNIT:
+								//ENTB:UNIT
+								//Delete EntB
+								em.toDelete.add(entB.getId());
+								break;
+							case WALL:
+								//ENTB:WALL
+								//Nothing
+								break;
+							case PROJECTILE:
+								//ENTB:PROJECTILE
+								//Delete EntB
+								em.toDelete.add(entB.getId());
+								break;
 						}
-						
+							break;
+						case PROJECTILE:
+							switch(entB.getType()){
+							case UNIT:
+								//ENTB:UNIT
+								em.impact((Projectile)entA, (Unit)entB);
+								break;
+							case WALL:
+								//ENTB:WALL
+								em.toDelete.add(entA.getId());
+								break;
+							case PROJECTILE:
+								//ENTB:PROJECTILE
+								//Nothing
+								break;
+						}
+							break;
 					}
-				}else{
-					//Same faction collision
 				}
+				
 			}
 
 			@Override
@@ -246,8 +272,8 @@ public class PlayState extends State implements InputProcessor{
 		Gdx.input.setInputProcessor(im);
 		
 		//Commanders
-		playerCom=new PlayerCommander(this.world,0f-Configuration.baseEntityWidth);
-		enemyCom=new EnemyCommander(this.world,Configuration.gameWorldWidth+Configuration.baseEntityWidth,Configuration.gameWorldHeight/10f);
+		playerCom=new PlayerCommander(this.world,0f-Configuration.baseEntityWidth,this.em);
+		enemyCom=new EnemyCommander(this.world,Configuration.gameWorldWidth+Configuration.baseEntityWidth,this.em,Configuration.gameWorldHeight/10f);
 	}
 	@Override
 	public void resize(int width, int height) {

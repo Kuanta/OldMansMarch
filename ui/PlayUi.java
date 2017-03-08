@@ -122,10 +122,10 @@ public class PlayUi extends Ui{
 		
 		//Hud Table
 		table=new Table();
-		table.add(createSpawnButton("Test",EntityManager.EntityType.TEST,masterState))
+		table.add(createSpawnButton("Test",EntityManager.UnitType.TEST,masterState))
 			.padRight(10).width(buttonWidth).height(buttonHeight);
 		table.padRight(100);
-		table.add(createSpawnButton("Wizard",EntityManager.EntityType.WIZARD,masterState)).padRight(10).width(buttonWidth).height(buttonHeight); //Zombie Button
+		table.add(createSpawnButton("Wizard",EntityManager.UnitType.WIZARD,masterState)).padRight(10).width(buttonWidth).height(buttonHeight); //Zombie Button
 		table.add(pauseButton).padRight(10).width(buttonWidth).height(buttonHeight);
 		table.add(exitButton).width(buttonWidth).height(buttonHeight);
 		table.add(goldLabel);
@@ -173,7 +173,7 @@ public class PlayUi extends Ui{
 		this.buttonGroup.add(button);
 		return button;
 	}*/
-	public Image createSpawnButton(String text,final EntityManager.EntityType type,final PlayState masterState){
+	public Image createSpawnButton(String text,final EntityManager.UnitType type,final PlayState masterState){
 		Image button=new Image( new TextureRegion(masterState.getEntityManager().textures.get(type),0,0,32,32));
 		button.setWidth(buttonWidth);
 		button.setHeight(buttonHeight);

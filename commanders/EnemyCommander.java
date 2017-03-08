@@ -13,12 +13,12 @@ public class EnemyCommander extends Commander{
 	private Vector2[]  spawnPoints;
 	private int spawnPointsLength;
 	private float spawnPointOffset; //Don't spawn enemies behind the HUD. This offsets tries to avoid that
-	public EnemyCommander(World world,float posX,float offset){
-		super(world,posX);
-		currentType=EntityManager.EntityType.ZOMBIE; //Set as default
+	public EnemyCommander(World world,float posX,EntityManager em,float offset){
+		super(world,posX,em);
+		currentType=EntityManager.UnitType.ZOMBIE; //Set as default
 		this.health=Configuration.enemyHealth;
 		this.faction=EntityManager.Faction.ENEMY;
-		createWall(world,EntityManager.ENEMY_WALL);
+		createWall(world,this.em);
 		this.gold=100;
 		entityValues=EntityManager.EntityType.values();
 		entityValuesLength=entityValues.length;

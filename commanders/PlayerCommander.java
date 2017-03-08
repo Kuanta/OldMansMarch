@@ -8,12 +8,12 @@ import com.oldmansmarch.entities.EntityManager.EntityType;
 
 public class PlayerCommander extends Commander{
 	
-	public PlayerCommander(World world,float posX){
-		super(world,posX);
-		currentType=EntityManager.EntityType.INFANTRY; //Set as default
+	public PlayerCommander(World world,float posX,EntityManager em){
+		super(world,posX,em);
+		currentType=EntityManager.UnitType.TEST; //Set as default
 		this.health=Configuration.playerHealth;
 		this.faction=EntityManager.Faction.PLAYER;
-		createWall(world,EntityManager.PLAYER_WALL);
+		createWall(world,this.em);
 		this.gold=10;
 		this.health=100;
 		this.direction=1;
