@@ -18,7 +18,7 @@ public class UndeadMage extends Caster {
         this.unitType=EntityManager.UnitType.UNDEAD_MAGE;
         this.sprite.setRegion(new TextureRegion(this.sheet,0,4*32,32,32));
         this.currentProjectile= EntityManager.ProjectileType.FIREBALL;
-        this.damage=0;
+        this.damage=1;
         this.health=1;
     }
 }

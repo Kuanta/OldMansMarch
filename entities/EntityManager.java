@@ -228,10 +228,13 @@ public class EntityManager {
 	public void deleteEntities(World world){
 		for(int i=0;i<toDelete.size;i++){
 			Entity ent=this.entities.get(toDelete.get(i));
-			world.destroyBody(ent.body);
-			this.entities.remove(toDelete.get(i));
-			lastFreedId.add(toDelete.get(i));
-			entCount--;
+			if(ent!=null){
+				world.destroyBody(ent.body);
+				this.entities.remove(toDelete.get(i));
+				lastFreedId.add(toDelete.get(i));
+				entCount--;
+			}
+			
 		}
 		
 	}
