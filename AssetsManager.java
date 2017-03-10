@@ -20,17 +20,16 @@ public class AssetsManager {
     public static enum Sheets{
         HUMANS,UNDEADS,SPELLS,HEAVY_UNDEAD
     }
-    public HashMap<Sheets,Texture> textures;
+    public HashMap<Integer,Texture> textures;
     public AssetsManager(){
-        textures=new HashMap<Sheets,Texture>();
-        textures.put(Sheets.HUMANS,new Texture(Gdx.files.internal("soldiers.png")));
-        textures.put(Sheets.UNDEADS,new Texture(Gdx.files.internal("undeads.png")));
-        textures.put(Sheets.HEAVY_UNDEAD,new Texture(Gdx.files.internal("undeads.png")));
-        textures.put(Sheets.SPELLS,new Texture(Gdx.files.internal("fireball.png")));
+        textures=new HashMap<Integer,Texture>();
+        textures.put(0,new Texture(Gdx.files.internal("soldiers.png")));
+        textures.put(1,new Texture(Gdx.files.internal("undeads.png")));
+        textures.put(2,new Texture(Gdx.files.internal("fireball.png")));
     }
     public void dispose(){
-        for(Sheets sheet:textures.keySet()){
-            textures.get(sheet).dispose();
+        for(Integer key:textures.keySet()){
+            textures.get(key).dispose();
         }
     }
 }

@@ -6,31 +6,60 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+<<<<<<< HEAD
 import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
+=======
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.XmlReader;
+
+import java.io.IOException;
+>>>>>>> 58e4dd3e6de01ab103b0676184ebf4697e895559
 
 public class Main extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
-	GameManager bigGuy;
+	//GameManager bigGuy;
+	AssetsManager assetsMan;
+
+
 	@Override
 	public void create () {
-		
+
+		assetsMan=new AssetsManager();
 		//bigGuy=new GameManager();
 		XmlReader reader=new XmlReader();
 		try {
-			Element root=reader.parse(Gdx.files.internal("types.xml"));
-			int childCount;
-			childCount=root.getChildCount();
-			for(int i=0;i<childCount;i++){
-				Element child=root.getChild(i);
-				int health=child.getIntAttribute("health");
-				String name=child.getAttribute("name");
-				System.out.println(name+" has "+health+" health");
+			XmlReader.Element root=reader.parse(Gdx.files.internal("unitTypes.xml"));
+			for(int i=0;i<root.getChildCount();i++){
+				XmlReader.Element type=root.getChild(i);
+				String name=type.getAttribute("name");
+				int health=type.getIntAttribute("health");
+				int damage=type.getIntAttribute("damage");
+				XmlReader.Element animations=type.getChild(0);
+				int animationCount=animations.getChildCount();
+				Animation[] anims=new Animation[animationCount];
+				for(int j=0;j<animationCount;j++){
+					XmlReader.Element anim=animations.getChild(j);
+					Texture sheet=assetsMan.textures.get(anim.getIntAttribute("sheetId"));
+					int frameCount=anim.getChildCount();
+					TextureRegion[] regions=new TextureRegion[frameCount];
+					for(int k=0;k<frameCount;k++){
+						XmlReader.Element frame=anim.getChild(k);
+						int row=frame.getIntAttribute("row");
+						int column=frame.getIntAttribute("column");
+						int width=frame.getIntAttribute("width");
+						int height=frame.getIntAttribute("height");
+						regions[k]=new TextureRegion(sheet,column*width,row*height,width,height);
+					}
+					anims[j]=new Animation(1f/20f,regions);
+				}
+
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
