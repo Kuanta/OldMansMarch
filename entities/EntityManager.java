@@ -9,15 +9,20 @@
 
 package com.oldmansmarch.entities;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.XmlReader;
 import com.oldmansmarch.AssetsManager;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.commanders.Commander;
@@ -41,6 +46,7 @@ public class EntityManager {
 		UNIT,
 		PROJECTILE
 	}
+	public HashMap<Integer,UnitType> unitTypes;
 	public static enum UnitType{
 		INFANTRY,
 		ZOMBIE,
@@ -82,7 +88,7 @@ public class EntityManager {
 	public Array<Integer> toDelete;
 
 	//AssetsManager
-	private AssetsManager assetesManager;
+	private AssetsManager assetsManager;
 
 	//Getters and Setters
 	public int getEntCount(){
@@ -90,7 +96,7 @@ public class EntityManager {
 	}
 	
 	public EntityManager(){
-		this.assetesManager=new AssetsManager();
+		this.assetsManager=new AssetsManager();
 		this.entities=new ConcurrentHashMap<Integer,Entity>();
 		this.toDelete=new Array<Integer>();
 		this.lastFreedId=new Array<Integer>();
@@ -119,10 +125,44 @@ public class EntityManager {
 		}
 	}
 	public Texture getUnitTexture(UnitType type){
-		return this.assetesManager.textures.get(this.unitTextures.get(type));
+		return this.assetsManager.textures.get(this.unitTextures.get(type));
 	}
 	public Texture getProjectileTexture(ProjectileType type){
-		return this.assetesManager.textures.get(this.projectileTextures.get(type));
+		return this.assetsManager.textures.get(this.projectileTextures.get(type));
+	}
+	public void parseUnitTypes(){
+		this.unitTypes=new HashMap<Integer,UnitType>();
+		XmlReader reader=new XmlReader();
+		try {
+			XmlReader.Element root=reader.parse(Gdx.files.internal("unitTypes.xml"));
+			for(int i=0;i<root.getChildCount();i++){
+				XmlReader.Element type=root.getChild(i);
+				String name=type.getAttribute("name");
+				int health=type.getIntAttribute("health");
+				int damage=type.getIntAttribute("damage");
+				XmlReader.Element animations=type.getChild(0);
+				int animationCount=animations.getChildCount();
+				Animation[] anims=new Animation[animationCount];
+				for(int j=0;j<animationCount;j++){
+					XmlReader.Element anim=animations.getChild(j);
+					Texture sheet=assetsManager.textures.get(anim.getIntAttribute("sheetId"));
+					int frameCount=anim.getChildCount();
+					TextureRegion[] regions=new TextureRegion[frameCount];
+					for(int k=0;k<frameCount;k++){
+						XmlReader.Element frame=anim.getChild(k);
+						int row=frame.getIntAttribute("row");
+						int column=frame.getIntAttribute("column");
+						int width=frame.getIntAttribute("width");
+						int height=frame.getIntAttribute("height");
+						regions[k]=new TextureRegion(sheet,column*width,row*height,width,height);
+					}
+					anims[j]=new Animation(1f/20f,regions);
+				}
+
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	public void createUnit(UnitType type,Commander commander,World world,Vector2 spawnPoint){
 		int id;

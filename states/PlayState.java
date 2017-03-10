@@ -191,7 +191,7 @@ public class PlayState extends State implements InputProcessor{
 			@Override
 			public void endContact(Contact contact) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
