@@ -13,13 +13,14 @@ import com.badlogic.gdx.utils.Timer;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.entities.EntityManager;
 import com.oldmansmarch.entities.EntityManager.EntityType;
+import com.oldmansmarch.entities.UnitTemplate;
 
 public abstract class Commander {
 	protected float spawnCooldown=0.2f;
 	protected float spawnTimer;
 	protected boolean onCooldown;
 	protected float health=1f;
-	protected EntityManager.UnitType currentType;
+	protected UnitTemplate currentUnitTemplate;
 	protected float posX; //This is the position in horizontal axis from which the units going to spawn
 	protected EntityManager.Faction faction;
 	protected float gold;
@@ -32,11 +33,11 @@ public abstract class Commander {
 	public float getHealth(){
 		return health;
 	}
-	public void damageCommander(int damage){
+	public void damageCommander(float damage){
 		this.health-=damage;
 	}
-	public void setCurrentType(EntityManager.UnitType type){
-		this.currentType=type;
+	public void setCurrentType(UnitTemplate type){
+		this.currentUnitTemplate=type;
 	}
 	public EntityManager.Faction getFaction(){
 		return this.faction;
@@ -81,14 +82,14 @@ public abstract class Commander {
 	public void spawn(EntityManager em,World world,Vector2 clicked){
 		if(!onCooldown){
 			//Check if the commander has enough gold
-			if(EntityManager.entityCosts.get(this.currentType)<=this.gold){
+			if(currentUnitTemplate.getCost()<=this.gold){
 				Vector2 spawnPoint=new Vector2(this.posX,clicked.y);
 				if(clicked.y>Configuration.gameWorldHeight-Configuration.baseEntityHeight){
 					spawnPoint.y=Configuration.gameWorldHeight-Configuration.baseEntityHeight;
 				}
-				em.createUnit(this.currentType,this,world,spawnPoint);
+				em.createUnit(this.currentUnitTemplate,this,world,spawnPoint);
 				onCooldown=true;
-				this.gold-=EntityManager.entityCosts.get(this.currentType);
+				this.gold-=currentUnitTemplate.getCost();
 			}else{
 				System.out.println("Not enough gold");
 			}	

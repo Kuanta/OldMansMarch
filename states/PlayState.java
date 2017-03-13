@@ -220,7 +220,7 @@ public class PlayState extends State implements InputProcessor{
 		Gdx.input.setInputProcessor(im);
 		
 		//Commanders
-		playerCom=new PlayerCommander(this.world,0f-Configuration.baseEntityWidth,this.em);
+		playerCom=new PlayerCommander(this.world,5f-Configuration.baseEntityWidth,this.em);
 		enemyCom=new EnemyCommander(this.world,Configuration.gameWorldWidth+Configuration.baseEntityWidth,this.em,Configuration.gameWorldHeight/10f);
 	}
 	@Override
@@ -263,7 +263,7 @@ public class PlayState extends State implements InputProcessor{
 		this.background.draw(batch);
 		em.draw(batch);
 		this.batch.end();
-		//debug.render(world, camera.combined);
+		debug.render(world, camera.combined);
 		this.ui.update();
 		this.ui.render(Gdx.graphics.getDeltaTime());
 		
@@ -281,8 +281,17 @@ public class PlayState extends State implements InputProcessor{
 		//Check if the game is over
 		if(playerCom.getHealth()<=0){
 			//Game Over
+			gameOver();
+			
+		}
+	}public void gameOver(){
+		//Call this once if the game is over
+		if(!isOver){
+			this.ui.gameOver();
 			isOver=true;
 		}
+		
+		
 	}
 	@Override
 	public void dispose() {

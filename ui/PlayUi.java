@@ -29,6 +29,7 @@ import com.badlogic.gdx.utils.Align;
 import com.oldmansmarch.AssetsManager;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.entities.EntityManager;
+import com.oldmansmarch.entities.UnitTemplate;
 import com.oldmansmarch.states.MainMenuState;
 import com.oldmansmarch.states.PlayState;
 import com.oldmansmarch.states.State;
@@ -37,18 +38,13 @@ public class PlayUi extends Ui{
 	Table table;
 	Table rootTable;
 	Table gameScreen;
-	ButtonGroup buttonGroup;
-	float buttonWidth;
-	float buttonHeight;
 	Label scoreLabel;
 	Label goldLabel;
 	Label healthLabel;
 	TextButton overButton;
-	float labelScaleWidth;
-	float labelScaleHeight;
 	Texture panelImage;
-	Image highlightedButton;
-	ArrayList<Image> spawnButtons;
+	Stack highlightedButton;
+	ArrayList<Stack> spawnButtons;
 	public Table getTable(){
 		return this.table;
 	}
@@ -59,24 +55,16 @@ public class PlayUi extends Ui{
 		
 		//Label format
 		df=new DecimalFormat("#");
-		labelScaleWidth=Gdx.graphics.getWidth()/400f;
-		labelScaleHeight=Gdx.graphics.getHeight()/300f;
 		
-		buttonWidth=stage.getWidth()/10f;
-		buttonHeight=stage.getHeight()/10f;
 		
 		//Button Group
-		buttonGroup=new ButtonGroup();
-		buttonGroup.setMaxCheckCount(1);
-		buttonGroup.setMinCheckCount(0);
-		buttonGroup.setUncheckLast(true);
-		this.spawnButtons=new ArrayList<Image>();
+		this.spawnButtons=new ArrayList<Stack>();
 		
 		//Pause Button
 		final TextButton pauseButton=new TextButton("Pause",skin,"default");
-		pauseButton.setWidth(buttonWidth);
-		pauseButton.setHeight(buttonHeight);
-		pauseButton.getLabel().setFontScale(1.3f);
+		pauseButton.setWidth(mediumButtonWidth);
+		pauseButton.setHeight(mediumButtonHeight);
+		pauseButton.getLabel().setFontScale(smallTextScaleX, smallTextScaleY);;
 		pauseButton.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				if(!masterState.isPaused()){
@@ -94,8 +82,7 @@ public class PlayUi extends Ui{
 		
 		//Exit Button(Back to Main Menu)
 		TextButton exitButton=new TextButton("Exit",skin,"default");
-		exitButton.setWidth(buttonWidth);
-		exitButton.setHeight(buttonHeight);
+		exitButton.getLabel().setFontScale(smallTextScaleX, smallTextScaleY);
 		exitButton.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				masterState.bigBoss.changeState(new MainMenuState(masterState.bigBoss));
@@ -104,6 +91,7 @@ public class PlayUi extends Ui{
 		
 		//Over Button
 		overButton=new TextButton("Game Over",skin,"default");
+		overButton.getLabel().setFontScale(smallTextScaleX, smallTextScaleY);
 		overButton.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				masterState.bigBoss.changeState(new MainMenuState(masterState.bigBoss));
@@ -117,13 +105,13 @@ public class PlayUi extends Ui{
 		
 		//Labels
 		scoreLabel=new Label("Score:",skin);
-		scoreLabel.setFontScale(labelScaleWidth,labelScaleHeight);
+		scoreLabel.setFontScale(this.mediumTextScaleX,this.mediumTextScaleY);
 		
 		goldLabel=new Label("Gold:",skin);
-		goldLabel.setFontScale(labelScaleWidth,labelScaleHeight);
+		goldLabel.setFontScale(mediumTextScaleX,mediumTextScaleY);
 	
 		healthLabel=new Label("Health:",skin);
-		healthLabel.setFontScale(labelScaleWidth,labelScaleHeight);
+		healthLabel.setFontScale(mediumTextScaleX,mediumTextScaleY);
 		//Stack
 		Stack stack=new Stack();
 
@@ -133,23 +121,22 @@ public class PlayUi extends Ui{
 		
 		//Hud Table
 		table=new Table();
-		table.add(createSpawnButton(AssetsManager.infantryRect,EntityManager.UnitType.INFANTRY,masterState))
-			.padRight(10).width(buttonWidth).height(buttonHeight);
+		table.add(createSpawnButton(0,masterState))
+			.padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
 		table.padRight(100);
-		table.add(createSpawnButton(AssetsManager.wizardRect,EntityManager.UnitType.WIZARD,masterState)).padRight(10).width(buttonWidth).height(buttonHeight); //Zombie Button
-		table.add(createSpawnButton(AssetsManager.mountedRect,EntityManager.UnitType.MOUNTED,masterState)).padRight(10).width(buttonWidth).height(buttonHeight);
-		table.add(pauseButton).padRight(10).width(buttonWidth).height(buttonHeight);
-		table.add(exitButton).width(buttonWidth).height(buttonHeight);
+		table.add(createSpawnButton(1,masterState)).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
+		table.add(createSpawnButton(2,masterState)).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
+		table.add(pauseButton).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
+		table.add(exitButton).width(mediumButtonWidth).height(mediumButtonHeight);
 		//table.add(goldLabel);
 		//table.setBackground(skin.getDrawable("default-pane"));
 		table.setWidth(Gdx.graphics.getWidth());
 		
 		//GameScreen (Creating a table on top of the hud so that user can click on it, spawn soldiers)
 		gameScreen=new Table();
+		gameScreen.top();
 		gameScreen.setTouchable(Touchable.enabled);
-		gameScreen.top().left();
 		gameScreen.add(healthLabel).pad(30);
-		gameScreen.top().right();
 		gameScreen.add(scoreLabel).pad(30);
 		gameScreen.add(goldLabel).pad(30);
 		gameScreen.addListener(new ClickListener(){
@@ -172,39 +159,55 @@ public class PlayUi extends Ui{
 		rootTable.add(stack).fillX().align(Align.bottom).height(Gdx.graphics.getHeight()/10f);
 		this.stage.addActor(rootTable);
 	}
-	public Image createSpawnButton(Rectangle rect, final EntityManager.UnitType type, final PlayState masterState){
-		TextureRegion region=new TextureRegion(masterState.getEntityManager().getUnitTexture(type),(int)rect.x,(int)rect.y,(int)rect.width,(int)rect.height);
-		final Image button=new Image(region);
-		System.out.println("X:"+rect.getX()+" Y:"+rect.getY());
-		button.setWidth(buttonWidth);
-		button.setHeight(buttonHeight);
-		button.addCaptureListener(new ClickListener(){
+	public Stack createSpawnButton(int unitTemplateId, final PlayState masterState){
+		//spawn button is a stack because i want to show the cost of the unit too
+		
+		final Stack stack=new Stack();
+		final UnitTemplate template=masterState.getEntityManager().unitTemplates.get(unitTemplateId);
+		final Image button=new Image(template.getPreview());
+		button.setWidth(mediumButtonWidth);
+		button.setHeight(mediumButtonHeight);
+		//this.buttonGroup.add(button);
+		stack.add(button);
+		
+		//Cost text
+		Table textTable=new Table(); //Needed to position the text
+		textTable.bottom();
+		Label text=new Label("Cost:"+df.format(template.getCost()),skin);
+		text.setFontScale(smallTextScaleX, smallTextScaleY);
+		textTable.add(text);
+		textTable.setFillParent(true);
+		
+		stack.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				//masterState.getEntityManager().createEntity(type, masterState.getWorld(), masterState.spawnPoint);
-				masterState.playerCom.setCurrentType(type);
-				highlightedButton=button;
+				masterState.playerCom.setCurrentType(template);
+				highlightedButton=stack;
 			}
 		});
-		//this.buttonGroup.add(button);
-		this.spawnButtons.add(button);
-		return button;
+		stack.add(textTable);
+		this.spawnButtons.add(stack);
+		return stack;
 	}
 	public void update(){
 		for(int i=0;i<spawnButtons.size();i++){
-			spawnButtons.get(i).setColor(Color.WHITE);
+			//First child of the stack(spawn button) is the image
+			spawnButtons.get(i).getChildren().get(0).setColor(Color.WHITE);
 		}
 		if(highlightedButton!=null){
-			highlightedButton.setColor(Color.GREEN);
+			//First child of the stack(spawn button) is the image
+			highlightedButton.getChildren().get(0).setColor(Color.GREEN);
 		}
 
 		scoreLabel.setText("Score:"+df.format(((PlayState) masterState).playerCom.getScore()));
 		goldLabel.setText("Gold:"+df.format(((PlayState)masterState).playerCom.getGold()));
 		healthLabel.setText("Health:"+df.format(((PlayState)masterState).playerCom.getHealth()));
 		
-		if(((PlayState)masterState).isOver){
-			//Game Over
-			gameScreen.add(overButton).width(buttonWidth).height(buttonHeight);
-		}
+	}
+	public void gameOver(){
+		//Game Over
+		gameScreen.row();
+		gameScreen.add(overButton).width(largeButtonWidth).height(largeButtonHeight).colspan(3).padTop(Gdx.graphics.getHeight()/5f);
 	}
 	public void dispose(){
 		super.dispose();

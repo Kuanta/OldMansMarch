@@ -26,13 +26,9 @@ import com.badlogic.gdx.utils.XmlReader;
 import com.oldmansmarch.AssetsManager;
 import com.oldmansmarch.Configuration;
 import com.oldmansmarch.commanders.Commander;
-import com.oldmansmarch.entities.projectiles.Fireball;
-import com.oldmansmarch.entities.units.HeavyUndead;
-import com.oldmansmarch.entities.units.Infantry;
-import com.oldmansmarch.entities.units.Mounted;
-import com.oldmansmarch.entities.units.UndeadMage;
-import com.oldmansmarch.entities.units.Wizard;
-import com.oldmansmarch.entities.units.Zombie;
+import com.oldmansmarch.entities.UnitTemplate;
+
+
 
 public class EntityManager {
 	/*Filters
@@ -46,29 +42,9 @@ public class EntityManager {
 		UNIT,
 		PROJECTILE
 	}
-	public HashMap<Integer,UnitType> unitTypes;
-	public static enum UnitType{
-		INFANTRY,
-		ZOMBIE,
-		WIZARD,
-		MOUNTED,
-		HEAVY_UNDEAD,
-		UNDEAD_MAGE
-	}
-	public static enum ProjectileType{
-		FIREBALL
-	}
-	//How much an entity will cost?
-	public static HashMap<UnitType,Float> entityCosts;
-	static{
-		entityCosts=new HashMap<UnitType,Float>();
-		entityCosts.put(UnitType.INFANTRY, 1f);
-		entityCosts.put(UnitType.ZOMBIE, 1f);
-		entityCosts.put(UnitType.WIZARD,4f);
-		entityCosts.put(UnitType.MOUNTED, 3f);
-		entityCosts.put(UnitType.HEAVY_UNDEAD, Configuration.heavyUndeadCost);
-		entityCosts.put(UnitType.UNDEAD_MAGE,Configuration.undeadMageCost);
-	}
+	public HashMap<Integer,UnitTemplate> unitTemplates;
+	public HashMap<Integer,UnitTemplate> enemyUnitTemplates;
+	public HashMap<Integer,ProjectileTemplate> projectileTemplates;
 	
 	public static enum Faction{
 		PLAYER,
@@ -76,10 +52,6 @@ public class EntityManager {
 	}
 	//Containers
 	private ConcurrentHashMap<Integer, Entity> entities; //This will hold the entities present on PlayerState
-
-	//Textures
-	public HashMap<UnitType,AssetsManager.Sheets> unitTextures;
-	public HashMap<ProjectileType,AssetsManager.Sheets> projectileTextures;
 	
 	//Id variables
 	private Array<Integer> lastFreedId;
@@ -97,24 +69,18 @@ public class EntityManager {
 	
 	public EntityManager(){
 		this.assetsManager=new AssetsManager();
+		
+		//Create the templates
+		this.unitTemplates=parseUnitTemplates("unitTypes.xml");
+		this.enemyUnitTemplates=parseUnitTemplates("enemyUnitTypes.xml");
+		this.projectileTemplates=parseProjectileTemplates("projectileTypes.xml");
+		
 		this.entities=new ConcurrentHashMap<Integer,Entity>();
 		this.toDelete=new Array<Integer>();
 		this.lastFreedId=new Array<Integer>();
 		entCount=0;
 		nextId=0;
 		
-		//Create Unit Textures
-		unitTextures=new HashMap<UnitType,AssetsManager.Sheets>();
-		unitTextures.put(UnitType.INFANTRY,AssetsManager.Sheets.HUMANS);
-		unitTextures.put(UnitType.MOUNTED,AssetsManager.Sheets.HUMANS);
-		unitTextures.put(UnitType.WIZARD,AssetsManager.Sheets.HUMANS);
-		unitTextures.put(UnitType.ZOMBIE,AssetsManager.Sheets.UNDEADS);
-		unitTextures.put(UnitType.HEAVY_UNDEAD,AssetsManager.Sheets.UNDEADS);
-		unitTextures.put(UnitType.UNDEAD_MAGE,AssetsManager.Sheets.UNDEADS);
-		
-		//Create Projectile Texture
-		projectileTextures=new HashMap<ProjectileType,AssetsManager.Sheets>();
-		projectileTextures.put(ProjectileType.FIREBALL,AssetsManager.Sheets.SPELLS);
 	}
 	public void draw(SpriteBatch batch){
 		for(Entry<Integer, Entity> ent:this.entities.entrySet()){
@@ -124,85 +90,83 @@ public class EntityManager {
 			
 		}
 	}
-	public Texture getUnitTexture(UnitType type){
-		return this.assetsManager.textures.get(this.unitTextures.get(type));
-	}
-	public Texture getProjectileTexture(ProjectileType type){
-		return this.assetsManager.textures.get(this.projectileTextures.get(type));
-	}
-	public void parseUnitTypes(){
-		this.unitTypes=new HashMap<Integer,UnitType>();
+	
+	public HashMap<Integer,UnitTemplate> parseUnitTemplates(String filename){
+		HashMap<Integer,UnitTemplate> templates=new HashMap<Integer,UnitTemplate>();
 		XmlReader reader=new XmlReader();
 		try {
-			XmlReader.Element root=reader.parse(Gdx.files.internal("unitTypes.xml"));
+			XmlReader.Element root=reader.parse(Gdx.files.internal(filename));
 			for(int i=0;i<root.getChildCount();i++){
+				//Read attributes of the UnitType
 				XmlReader.Element type=root.getChild(i);
+				int id=type.getIntAttribute("id");
 				String name=type.getAttribute("name");
+				int isCaster=type.getIntAttribute("isCaster");
+				int projectileTemplateId=type.getIntAttribute("projectileTemplateId");
 				int health=type.getIntAttribute("health");
 				int damage=type.getIntAttribute("damage");
+				int cost=type.getIntAttribute("cost");
+				float speed=Float.parseFloat(type.getAttribute("speed"));
+				float width=Float.parseFloat(type.getAttribute("width"));
+				float height=Float.parseFloat(type.getAttribute("height"));
+				//UnitType unitType=new UnitType(id,name,isCaster,health,damage,cost);
+				UnitTemplate unitType=new UnitTemplate(id, name, isCaster, projectileTemplateId,health, damage, speed,width,height,cost);
+				
 				XmlReader.Element animations=type.getChild(0);
 				int animationCount=animations.getChildCount();
-				Animation[] anims=new Animation[animationCount];
 				for(int j=0;j<animationCount;j++){
 					XmlReader.Element anim=animations.getChild(j);
-					Texture sheet=assetsManager.textures.get(anim.getIntAttribute("sheetId"));
-					int frameCount=anim.getChildCount();
-					TextureRegion[] regions=new TextureRegion[frameCount];
-					for(int k=0;k<frameCount;k++){
-						XmlReader.Element frame=anim.getChild(k);
-						int row=frame.getIntAttribute("row");
-						int column=frame.getIntAttribute("column");
-						int width=frame.getIntAttribute("width");
-						int height=frame.getIntAttribute("height");
-						regions[k]=new TextureRegion(sheet,column*width,row*height,width,height);
-					}
-					anims[j]=new Animation(1f/20f,regions);
+					unitType.addAnimationTemplate(anim, assetsManager);
 				}
-
+				unitType.setPreview();
+				templates.put(id,unitType);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return templates;
 	}
-	public void createUnit(UnitType type,Commander commander,World world,Vector2 spawnPoint){
+	public HashMap<Integer,ProjectileTemplate> parseProjectileTemplates(String filename){
+		HashMap<Integer,ProjectileTemplate> templates=new HashMap<Integer,ProjectileTemplate>();
+		XmlReader reader=new XmlReader();
+		try {
+			XmlReader.Element root=reader.parse(Gdx.files.internal(filename));
+			for(int i=0;i<root.getChildCount();i++){
+				//Read attributes of the UnitType
+				XmlReader.Element type=root.getChild(i);
+				int id=type.getIntAttribute("id");
+				String name=type.getAttribute("name");
+				int damage=type.getIntAttribute("damage");
+				float speed=Float.parseFloat(type.getAttribute("speed"));
+				float width=Float.parseFloat(type.getAttribute("width"));
+				float height=Float.parseFloat(type.getAttribute("height"));
+				//UnitType unitType=new UnitType(id,name,isCaster,health,damage,cost);
+				ProjectileTemplate projectileType=new ProjectileTemplate(id, name,damage, speed,width,height);
+				
+				XmlReader.Element animations=type.getChild(0);
+				int animationCount=animations.getChildCount();
+				for(int j=0;j<animationCount;j++){
+					XmlReader.Element anim=animations.getChild(j);
+					projectileType.addAnimationTemplate(anim, assetsManager);
+				}
+				templates.put(id,projectileType);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return templates;
+	}
+	public void createUnit(UnitTemplate template,Commander commander,World world,Vector2 spawnPoint){
 		int id;
 		id=requestId();
-		switch(type){
-		case INFANTRY:
-			this.entities.put(id, new Infantry(id,commander,world,getUnitTexture(type),spawnPoint));
-			break;
-		case ZOMBIE:
-			this.entities.put(id, new Zombie(id,commander,world,getUnitTexture(type),spawnPoint,true,true));
-			break;
-		case WIZARD:
-			this.entities.put(id,new Wizard(id,commander,this,world,getUnitTexture(type),spawnPoint,true,true));
-			break;
-		case MOUNTED:
-			this.entities.put(id,new Mounted(id,commander,world,getUnitTexture(type),spawnPoint));
-			break;
-		case HEAVY_UNDEAD:
-			this.entities.put(id,new HeavyUndead(id,commander,world,getUnitTexture(type),spawnPoint));
-			break;
-		case UNDEAD_MAGE:
-			this.entities.put(id,new UndeadMage(id,commander,this,world,getUnitTexture(type),spawnPoint));
-			break;
-		default:
-			
-			break;
-		}
+		this.entities.put(id, new Unit(id,commander,this,world,template,this.assetsManager,spawnPoint));
 		entCount++;
 		
 	}
-	public void createProjectile(ProjectileType type,Commander commander,World world,Vector2 spawnPoint,Vector2 initialSpeed){
-		int id;
-		id=requestId();
-		switch(type){
-		case FIREBALL:
-			this.entities.put(id, new Fireball(id, commander,world, getProjectileTexture(type), spawnPoint, initialSpeed));
-			break;
-		default:
-			break;
-		}
+	public void createProjectile(int templateId,Commander commander,World world,Vector2 spawnPoint,Vector2 initialSpeed){
+		int id=requestId();
+		this.entities.put(id,new Projectile(id,commander,world,this.projectileTemplates.get(templateId),spawnPoint,initialSpeed));
+		entCount++;
 	}
 	public void createWall(World world,Commander commander,Vector2 pos){
 		int id;
@@ -211,40 +175,40 @@ public class EntityManager {
 	}
 	//Unit vs Unit
 	public void combat(Unit entA,Unit entB){
-		entA.health-=entB.damage;
-		entB.health-=entA.damage;
-		System.out.println(entB.damage+" "+entA.damage);
-		System.out.println("Combat");
+		entA.takeDamage(entB.getDamage());
+		entB.takeDamage(entA.getDamage());
 		
 		//Kill the entities if they are 0 hp
-		if(entA.health<=0){
+		if(entA.getHealth()<=0){
 			//if entA is the enemy, add its cost as score
 			if(entB.commander.getFaction()==Faction.PLAYER){ //EntB belongs to player
-				entB.commander.updateScore(entityCosts.get(entB.getUnitType()));
+				entB.commander.updateScore(entA.getCost());
 			}
 			this.toDelete.add(entA.id);
 		}
-		if(entB.health<=0){
+		if(entB.getHealth()<=0){
 			//If entB is the enemy
 			if(entA.commander.getFaction()==Faction.PLAYER){//EntA belongs to player
-				entA.commander.updateScore(entityCosts.get(entB.getUnitType()));
+				entA.commander.updateScore(entB.getCost());
 			}
 			this.toDelete.add(entB.id);
 		}
 	}
 	//Projectile vs Unit
 	public void impact(Projectile pro,Unit unit){
-		pro.doStuff(unit);
+		unit.takeDamage(pro.getDamage());
 		if(unit.getHealth()<=0){
 			this.toDelete.add(unit.getId());
 		}
+		System.out.println("Deleted a pro with id"+pro.getId());
 		this.toDelete.add(pro.getId());
 	}
 	public void impact(Unit unit,Projectile pro){
-		pro.doStuff(unit);
+		unit.takeDamage(pro.getDamage());
 		if(unit.getHealth()<=0){
 			this.toDelete.add(unit.getId());
 		}
+		System.out.println("Deleted a pro with id"+pro.getId());
 		this.toDelete.add(pro.getId());
 	}
 	public int requestId(){
@@ -279,6 +243,6 @@ public class EntityManager {
 		
 	}
 	public void dispose(){
-		this.assetesManager.dispose();
+		this.assetsManager.dispose();
 	}
 }

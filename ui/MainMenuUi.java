@@ -27,7 +27,9 @@ public class MainMenuUi extends Ui{
 		
 		//.......Start Button.........
 		final TextButton startButton=new TextButton("Start",this.skin);
-		startButton.getLabel().setFontScale(1.5f, 1.2f);
+		startButton.setWidth(largeButtonWidth);
+		startButton.setHeight(largeButtonHeight);
+		startButton.getLabel().setFontScale(mediumTextScaleX, mediumTextScaleY);
 		startButton.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				masterState.bigBoss.changeState(new PlayState(masterState.bigBoss));
@@ -37,7 +39,9 @@ public class MainMenuUi extends Ui{
 		
 		//.......Options Button......
 		final TextButton optionsButton=new TextButton("Options",this.skin);
-		optionsButton.getLabel().setFontScale(1.5f, 1.2f);
+		optionsButton.setWidth(largeButtonWidth);
+		optionsButton.setHeight(largeButtonHeight);
+		optionsButton.getLabel().setFontScale(mediumTextScaleX, mediumTextScaleY);
 		optionsButton.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				masterState.changeMenu(new OptionsUi(masterState,masterState.batch));
@@ -46,7 +50,9 @@ public class MainMenuUi extends Ui{
 		
 		//......Exit Button........
 		final TextButton exitButton=new TextButton("Exit",this.skin);
-		exitButton.getLabel().setFontScale(1.5f, 1.2f);
+		exitButton.setWidth(largeButtonWidth);
+		exitButton.setHeight(largeButtonHeight);
+		exitButton.getLabel().setFontScale(mediumTextScaleX, mediumTextScaleY);
 		exitButton.addCaptureListener(new ClickListener(){
 			public void clicked(InputEvent event,float x,float y){
 				Gdx.app.exit();

@@ -18,16 +18,22 @@ public abstract class Entity {
 	public Sprite sprite;
 	public Body body;
 	
+	protected World world;
 	protected boolean isActive;
 	protected int id;
 	protected EntityManager.EntityType type;
 	protected Commander commander;
+	protected float elapsedTime;
+	protected int direction;
 
 
 	public Entity(int id,Commander commander,World world,Vector2 initPos){
 		this.id=id;
 		this.isActive=true;
 		this.commander=commander;
+		this.world=world;
+		this.elapsedTime=0;
+		this.direction=commander.getDirection();
 	}
 	
 	//Getters and Setters
@@ -56,11 +62,14 @@ public abstract class Entity {
 		this.sprite=new Sprite();
 		this.sprite.setSize(width,height);
 		this.sprite.setPosition(initX, initY);
+		sprite.setOrigin(width/2f, height/2f);
 	}
 	public void createSprite(float width,float height,float initX,float initY){
 		sprite=new Sprite();
 		sprite.setSize(width,height);
 		sprite.setPosition(initX, initY);
+		sprite.setOrigin(width/2f, height/2f);
+		sprite.setFlip(true,false);
 	}
 	public void createStaticBody(World world,float width,float height,float initX,float initY){
 		BodyDef bd=new BodyDef();
@@ -112,10 +121,15 @@ public abstract class Entity {
 	}
 	//Other
 	public void draw(SpriteBatch batch){
-		batch.draw(sprite, body.getPosition().x, body.getPosition().y, body.getLocalCenter().x,
-				body.getLocalCenter().y, sprite.getWidth(), sprite.getHeight(), sprite.getScaleX(), sprite.getScaleY(), body.getAngle());
+		if(sprite!=null && body!=null){
+			batch.draw(sprite, body.getPosition().x, body.getPosition().y, sprite.getOriginX(),
+					sprite.getOriginY(), sprite.getWidth(), sprite.getHeight(), sprite.getScaleX()*this.direction, sprite.getScaleY(), body.getAngle());
+		}else{
+			System.out.println("Null sprite or body");
+		}
+		
 	}
 	public void update(float delta){
-		
+		this.elapsedTime+=delta;
 	}
 }

@@ -13,10 +13,12 @@ public abstract class State{
 	public State(GameManager bigBoss){
 		this.bigBoss=bigBoss;
 		batch=new SpriteBatch();
+	
 	}
 	public void render(){
 		
 	}
+	
 	public void dispose(){
 		this.batch.dispose();
 	}
