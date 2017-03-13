@@ -66,6 +66,5 @@ public class Ui {
 	}
 	public void resize(int width,int height){
 		this.stage.getViewport().update(width,height,true);
-		System.out.println("Resized");
 	}
 }

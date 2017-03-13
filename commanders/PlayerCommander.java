@@ -17,11 +17,12 @@ public class PlayerCommander extends Commander{
 		this.gold=10;
 		this.health=2;
 		this.direction=1;
+		this.maxGold=20;
 		
 	}
 	public void update(float delta){
 		super.update(delta);
-		if(this.gold<=15){
+		if(this.gold<=this.maxGold){
 			this.gold+=Configuration.goldPerSec*delta;
 		}
 	}

@@ -200,7 +200,7 @@ public class EntityManager {
 		if(unit.getHealth()<=0){
 			this.toDelete.add(unit.getId());
 		}
-		System.out.println("Deleted a pro with id"+pro.getId());
+		
 		this.toDelete.add(pro.getId());
 	}
 	public void impact(Unit unit,Projectile pro){
@@ -208,7 +208,7 @@ public class EntityManager {
 		if(unit.getHealth()<=0){
 			this.toDelete.add(unit.getId());
 		}
-		System.out.println("Deleted a pro with id"+pro.getId());
+	
 		this.toDelete.add(pro.getId());
 	}
 	public int requestId(){

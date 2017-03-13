@@ -11,8 +11,8 @@ public class Configuration {
 	//Gameplay
 	public static float playerHealth=1;
 	public static float enemyHealth=50;
-	public static float baseEntitySpeed=10f;
-	public static float goldPerSec=1.5f;
+	public static float baseEntitySpeed=8f;
+	public static float goldPerSec=2f;
 
 	//Unit Costs
 	public static float heavyUndeadCost=2f;

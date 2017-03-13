@@ -28,6 +28,7 @@ public abstract class Commander {
 	protected float baseSpeed;
 	protected int direction;
 	protected EntityManager em;
+	protected float maxGold;
 	
 	//Getters
 	public float getHealth(){
@@ -55,6 +56,9 @@ public abstract class Commander {
 	public int getDirection(){
 		return this.direction;
 	}
+	public float getMaxGold(){
+		return this.maxGold;
+	}
 	//Setters
 	public void setScore(float newScore){
 		this.score=newScore;
@@ -67,6 +71,12 @@ public abstract class Commander {
 	}
 	public void updateSpeed(float speed){
 		this.baseSpeed+=speed;
+	}
+	public void setMaxGold(float maxGold){
+		this.maxGold=maxGold;
+	}
+	public void updateGold(float goldToAdd){
+		this.maxGold+=goldToAdd;
 	}
 	public void setSpawnCooldown(float newCooldown){this.spawnCooldown=newCooldown;}
 	public void updateSpawnCooldown(float cd){this.spawnCooldown+=cd;}

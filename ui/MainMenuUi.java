@@ -14,13 +14,9 @@ import com.oldmansmarch.states.State;
 
 public class MainMenuUi extends Ui{
 	
-	private float buttonWidth;
-	private float buttonHeight;
 	Table table;
 	public MainMenuUi(final State masterState,SpriteBatch batch) {
 		super(masterState,batch);
-		buttonWidth=this.stage.getWidth()/5f;
-		buttonHeight=this.stage.getHeight()/15f;
 		float pad=this.stage.getHeight()/15f;
 		//Default Skin
 		defaultSkin();
@@ -37,8 +33,8 @@ public class MainMenuUi extends Ui{
 		});
 	
 		
-		//.......Options Button......
-		final TextButton optionsButton=new TextButton("Options",this.skin);
+		//.......Highest Score......
+		final TextButton optionsButton=new TextButton("HighScore",this.skin);
 		optionsButton.setWidth(largeButtonWidth);
 		optionsButton.setHeight(largeButtonHeight);
 		optionsButton.getLabel().setFontScale(mediumTextScaleX, mediumTextScaleY);
@@ -61,11 +57,11 @@ public class MainMenuUi extends Ui{
 		
 		table=new Table();
 		table.setFillParent(true);
-		table.add(startButton).width(buttonWidth).height(buttonHeight).padBottom(pad);
+		table.add(startButton).width(largeButtonWidth).height(largeButtonHeight).padBottom(pad);
 		table.row();
-		table.add(optionsButton).width(buttonWidth).height(buttonHeight).padBottom(pad);
+		table.add(optionsButton).width(largeButtonWidth).height(largeButtonHeight).padBottom(pad);
 		table.row();
-		table.add(exitButton).width(buttonWidth).height(buttonHeight).padBottom(pad);
+		table.add(exitButton).width(largeButtonWidth).height(largeButtonHeight).padBottom(pad);
 		stage.addActor(table);
 		
 	}

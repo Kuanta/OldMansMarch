@@ -38,13 +38,18 @@ public class PlayUi extends Ui{
 	Table table;
 	Table rootTable;
 	Table gameScreen;
+	Table hearthTable; //Show the health
+	Image hearthImage;
 	Label scoreLabel;
 	Label goldLabel;
 	Label healthLabel;
 	TextButton overButton;
-	Texture panelImage;
 	Stack highlightedButton;
 	ArrayList<Stack> spawnButtons;
+	
+	//Disposables
+	Texture panelImage;
+	Texture hearth;
 	public Table getTable(){
 		return this.table;
 	}
@@ -53,6 +58,10 @@ public class PlayUi extends Ui{
 		super(masterState, batch);
 		defaultSkin();
 		
+		hearth=new Texture(Gdx.files.internal("hearth.png"));
+		hearthImage=new Image(hearth);
+		hearthTable=new Table();
+		hearthTable.add(hearthImage).width(Gdx.graphics.getWidth()/20f).height(Gdx.graphics.getHeight()/20f);
 		//Label format
 		df=new DecimalFormat("#");
 		
@@ -112,6 +121,7 @@ public class PlayUi extends Ui{
 	
 		healthLabel=new Label("Health:",skin);
 		healthLabel.setFontScale(mediumTextScaleX,mediumTextScaleY);
+		hearthTable.add(healthLabel);
 		//Stack
 		Stack stack=new Stack();
 
@@ -126,6 +136,7 @@ public class PlayUi extends Ui{
 		table.padRight(100);
 		table.add(createSpawnButton(1,masterState)).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
 		table.add(createSpawnButton(2,masterState)).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
+		table.add(createSpawnButton(3,masterState)).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
 		table.add(pauseButton).padRight(10).width(mediumButtonWidth).height(mediumButtonHeight);
 		table.add(exitButton).width(mediumButtonWidth).height(mediumButtonHeight);
 		//table.add(goldLabel);
@@ -136,7 +147,8 @@ public class PlayUi extends Ui{
 		gameScreen=new Table();
 		gameScreen.top();
 		gameScreen.setTouchable(Touchable.enabled);
-		gameScreen.add(healthLabel).pad(30);
+
+		gameScreen.add(hearthTable).pad(30);
 		gameScreen.add(scoreLabel).pad(30);
 		gameScreen.add(goldLabel).pad(30);
 		gameScreen.addListener(new ClickListener(){
@@ -201,16 +213,35 @@ public class PlayUi extends Ui{
 
 		scoreLabel.setText("Score:"+df.format(((PlayState) masterState).playerCom.getScore()));
 		goldLabel.setText("Gold:"+df.format(((PlayState)masterState).playerCom.getGold()));
-		healthLabel.setText("Health:"+df.format(((PlayState)masterState).playerCom.getHealth()));
+		healthLabel.setText("x"+df.format(((PlayState)masterState).playerCom.getHealth()));
+	
 		
 	}
-	public void gameOver(){
+	public void gameOver(float score,int highestScore,boolean isHighScore){
 		//Game Over
 		gameScreen.row();
-		gameScreen.add(overButton).width(largeButtonWidth).height(largeButtonHeight).colspan(3).padTop(Gdx.graphics.getHeight()/5f);
+		Label scoreLabel=new Label("Score:"+df.format(score),skin);
+		scoreLabel.setFontScale(mediumTextScaleX, mediumTextScaleY);
+		if(isHighScore){
+			Label highScoreLabel=new Label("New HighScore!",skin);
+			highScoreLabel.setFontScale(mediumTextScaleX, mediumTextScaleY);
+			//highScoreLabel.setFontScale(smallTextScaleX, smallTextScaleY);
+			gameScreen.add(highScoreLabel).colspan(3).padTop(Gdx.graphics.getHeight()/5f);
+		}else{
+			Label prevHighScore=new Label("Highest Score:"+highestScore,skin);
+			prevHighScore.setFontScale(mediumTextScaleX, mediumTextScaleY);
+			//prevHighScore.setFontScale(smallTextScaleX, smallTextScaleY);
+			gameScreen.add(prevHighScore).colspan(3).padTop(Gdx.graphics.getHeight()/5f);
+		}
+		gameScreen.row();
+		gameScreen.add(scoreLabel).colspan(3);
+		gameScreen.row();
+		gameScreen.add(overButton).width(largeButtonWidth).height(largeButtonHeight).colspan(3);
+		
 	}
 	public void dispose(){
 		super.dispose();
 		this.panelImage.dispose();
+		this.hearth.dispose();
 	}
 }

@@ -103,10 +103,9 @@ public class Unit extends Entity{
 	}
 	public void cast(){
 		if(!onCooldown){
-			Vector2 bodyPos=this.body.getPosition();
-			Vector2 from=new Vector2(bodyPos.x+this.sprite.getWidth(),bodyPos.y+this.sprite.getHeight()/4f);
+			Vector2 bodyPos=this.body.getWorldCenter();
+			Vector2 from=new Vector2(bodyPos.x,bodyPos.y+this.sprite.getHeight()/4f);
 			this.em.createProjectile(projectileId, commander, world, from, this.body.getLinearVelocity());
-			System.out.println("Boom");
 			this.onCooldown=true;
 		}
 	}

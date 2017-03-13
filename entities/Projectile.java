@@ -25,7 +25,6 @@ public class Projectile extends Entity{
 	}
 	public Projectile(int id, Commander commander,World world, ProjectileTemplate template,Vector2 initPos,Vector2 initalSpeed) { //Initial speed is the speed of the caster
 		super(id,commander, world, initPos);
-		System.out.println("Created a projectile with id "+id);
 		this.type=EntityManager.EntityType.PROJECTILE;
 		
 		this.speed=template.getSpeed();

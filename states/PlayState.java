@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -66,7 +67,7 @@ public class PlayState extends State implements InputProcessor{
 	
 	//Gameplay
 	int difficulty;
-	int scoreThres=5;
+	int scoreThres=50;
 	//Getters
 	public OrthographicCamera getCamera(){
 		return this.camera;
@@ -98,11 +99,7 @@ public class PlayState extends State implements InputProcessor{
 		difficulty=1;
 		
 		//Camera
-		//camera=new OrthographicCamera(Gdx.graphics.getWidth()/pixPerUnit,Gdx.graphics.getWidth()/pixPerUnit);
-		float aspectRatio=Gdx.graphics.getWidth()/Gdx.graphics.getHeight();
 		camera=new OrthographicCamera(Configuration.gameWorldWidth,Configuration.gameWorldHeight);
-		/*view=new FitViewport(Gdx.graphics.getWidth()/pixPerUnit,Gdx.graphics.getHeight()/pixPerUnit,camera);
-		view.apply();*/
 		camera.translate(camera.viewportWidth/2, camera.viewportHeight/2);
 		camera.update();
 				
@@ -115,9 +112,7 @@ public class PlayState extends State implements InputProcessor{
 		//Ui
 		this.ui=new PlayUi(this,batch,Configuration.gameWorldWidth,Configuration.gameWorldHeight);
 		
-		
-		
-		//TestCode
+		//Box2D world
 		world=new World(new Vector2(0,0),true);
 		world.setContactListener(new ContactListener(){
 			public void beginContact(Contact contact) {
@@ -220,7 +215,7 @@ public class PlayState extends State implements InputProcessor{
 		Gdx.input.setInputProcessor(im);
 		
 		//Commanders
-		playerCom=new PlayerCommander(this.world,5f-Configuration.baseEntityWidth,this.em);
+		playerCom=new PlayerCommander(this.world,0f-Configuration.baseEntityWidth,this.em);
 		enemyCom=new EnemyCommander(this.world,Configuration.gameWorldWidth+Configuration.baseEntityWidth,this.em,Configuration.gameWorldHeight/10f);
 	}
 	@Override
@@ -263,7 +258,6 @@ public class PlayState extends State implements InputProcessor{
 		this.background.draw(batch);
 		em.draw(batch);
 		this.batch.end();
-		debug.render(world, camera.combined);
 		this.ui.update();
 		this.ui.render(Gdx.graphics.getDeltaTime());
 		
@@ -274,9 +268,9 @@ public class PlayState extends State implements InputProcessor{
 		if(playerCom.getScore()>this.scoreThres*this.difficulty){
 			this.difficulty++;
 			enemyCom.updateSpeed(1f);
-			/*if(enemyCom.getSpawnCooldown()>0.1){
+			if(enemyCom.getSpawnCooldown()>0.5){
 				enemyCom.updateSpawnCooldown(-0.1f);
-			}*/
+			}
 		}
 		//Check if the game is over
 		if(playerCom.getHealth()<=0){
@@ -287,7 +281,16 @@ public class PlayState extends State implements InputProcessor{
 	}public void gameOver(){
 		//Call this once if the game is over
 		if(!isOver){
-			this.ui.gameOver();
+			boolean isHighScore=false;
+			Preferences prefs=Gdx.app.getPreferences("GamePrefs");
+			int highScore=prefs.getInteger("Highscore", 0);
+			if(this.playerCom.getScore()>highScore){
+				//New highScore
+				isHighScore=true;
+				prefs.putInteger("Highscore", (int) this.playerCom.getScore());
+				prefs.flush();
+			}
+			this.ui.gameOver(this.playerCom.getScore(),highScore,isHighScore);
 			isOver=true;
 		}
 		
