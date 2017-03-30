@@ -5,8 +5,8 @@ public class Configuration {
 	//Size Variables
 	public static float gameWorldHeight=50;
 	public static float gameWorldWidth=50;
-	public static float baseEntityWidth=2.5f;
-	public static float baseEntityHeight=5;
+	public static float baseEntityWidth=3f;
+	public static float baseEntityHeight=3f;
 	
 	//Gameplay
 	public static float playerHealth=1;
